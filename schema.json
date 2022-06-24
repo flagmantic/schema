@@ -1,11 +1,49 @@
 {
-  "$schema": "http://json-schema.org/draft-06/schema#",
-  "type": "array",
-  "items": {
-    "$ref": "#/definitions/SchemaElement"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://firstkindsoftware.com/FeatureFlag.schema.json",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "number",
+      "enum": [1]
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Project"
+      }
+    }
   },
-  "definitions": {
-    "SchemaElement": {
+  "additionalProperties": false,
+  "required": ["version", "projects"],
+  "$defs": {
+    "Project": {
+      "title": "Project",
+      "type": "object",
+      "required": ["name", "key", "featureFlags"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "tags": {
+          "type": ["array", "null"],
+          "items": { "type": "string" }
+        },
+        "featureFlags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FeatureFlag"
+          }
+        }
+      }
+    },
+    "FeatureFlag": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -29,7 +67,7 @@
           "minProperties": 1,
           "patternProperties": {
             "^[0-9]+$": {
-              "$ref": "#/definitions/LabeledFlag"
+              "$ref": "#/$defs/LabeledFlag"
             }
           }
         },
@@ -37,7 +75,7 @@
           "type": "boolean"
         },
         "environments": {
-          "$ref": "#/definitions/Environments"
+          "$ref": "#/$defs/Environments"
         }
       },
       "required": ["environments", "is_frontend", "key", "name", "variations"],
@@ -47,7 +85,7 @@
       "type": "object",
       "minProperties": 1,
       "additionalProperties": {
-        "$ref": "#/definitions/Environment"
+        "$ref": "#/$defs/Environment"
       },
       "required": ["development", "production", "staging"],
       "title": "Environments"
@@ -62,7 +100,7 @@
         "targeting": {
           "type": ["array", "null"],
           "items": {
-            "$ref": "#/definitions/Targeting"
+            "$ref": "#/$defs/Targeting"
           }
         },
         "enabled_default_variation": {
@@ -87,7 +125,7 @@
           "type": "string"
         },
         "formula": {
-          "$ref": "#/definitions/Formula"
+          "$ref": "#/$defs/Formula"
         },
         "variation": {
           "type": "integer"
@@ -111,12 +149,12 @@
       "additionalProperties": false,
       "properties": {
         "Pure": {
-          "$ref": "#/definitions/TargetingStrategy"
+          "$ref": "#/$defs/TargetingStrategy"
         },
         "And": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Formula"
+            "$ref": "#/$defs/Formula"
           },
           "minItems": 2,
           "maxItems": 2
@@ -124,13 +162,13 @@
         "Or": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Formula"
+            "$ref": "#/$defs/Formula"
           },
           "minItems": 2,
           "maxItems": 2
         },
         "Negate": {
-          "$ref": "#/definitions/Formula"
+          "$ref": "#/$defs/Formula"
         }
       },
       "required": [],
@@ -143,13 +181,13 @@
       "maxProperties": 1,
       "properties": {
         "MetadataPredicate": {
-          "$ref": "#/definitions/MetadataPredicate"
+          "$ref": "#/$defs/MetadataPredicate"
         },
         "UserId": {
-          "$ref": "#/definitions/UserID"
+          "$ref": "#/$defs/UserID"
         },
         "Percentage": {
-          "$ref": "#/definitions/Percentage"
+          "$ref": "#/$defs/Percentage"
         }
       },
       "required": [],
@@ -207,7 +245,7 @@
           "type": "string"
         },
         "flag": {
-          "$ref": "#/definitions/Flag"
+          "$ref": "#/$defs/Flag"
         }
       },
       "required": ["flag", "label"],
@@ -223,7 +261,7 @@
           "type": "boolean"
         },
         "JsonFlag": {
-          "$ref": "#/definitions/JSONFlag"
+          "$ref": "#/$defs/JSONFlag"
         }
       },
       "required": [],
