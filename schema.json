@@ -1,0 +1,238 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/SchemaElement"
+  },
+  "definitions": {
+    "SchemaElement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "tags": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "variations": {
+          "type": "object",
+          "minProperties": 1,
+          "patternProperties": {
+            "^[0-9]+$": {
+              "$ref": "#/definitions/LabeledFlag"
+            }
+          }
+        },
+        "is_frontend": {
+          "type": "boolean"
+        },
+        "environments": {
+          "$ref": "#/definitions/Environments"
+        }
+      },
+      "required": ["environments", "is_frontend", "key", "name", "variations"],
+      "title": "SchemaElement"
+    },
+    "Environments": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/definitions/Environment"
+      },
+      "required": ["development", "production", "staging"],
+      "title": "Environments"
+    },
+    "Environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "targeting": {
+          "type": ["array", "null"],
+          "items": {
+            "$ref": "#/definitions/Targeting"
+          }
+        },
+        "enabled_default_variation": {
+          "type": "integer"
+        },
+        "disabled_variation": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "disabled_variation",
+        "enabled",
+        "enabled_default_variation"
+      ],
+      "title": "Environment"
+    },
+    "Targeting": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "formula": {
+          "$ref": "#/definitions/Formula"
+        },
+        "variation": {
+          "type": "integer"
+        },
+        "starts_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["expires_at", "formula", "name", "starts_at", "variation"],
+      "title": "Targeting"
+    },
+    "Formula": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "Pure": {
+          "$ref": "#/definitions/TargetingStrategy"
+        },
+        "And": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Formula"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "Or": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Formula"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "Negate": {
+          "$ref": "#/definitions/Formula"
+        }
+      },
+      "required": [],
+      "title": "Formula"
+    },
+    "TargetingStrategy": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "properties": {
+        "MetadataPredicate": {
+          "$ref": "#/definitions/MetadataPredicate"
+        },
+        "UserId": {
+          "$ref": "#/definitions/UserID"
+        },
+        "Percentage": {
+          "$ref": "#/definitions/Percentage"
+        }
+      },
+      "required": [],
+      "title": "TargetingStrategy"
+    },
+    "MetadataPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "attribute": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string",
+          "enum": ["StartsWith", "EndsWith", "Equals", "Contains", "Matches"]
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": ["attribute", "operator", "value"],
+      "title": "MetadataPredicate"
+    },
+    "UserID": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "integer"
+          }
+        }
+      },
+      "required": ["user_ids"],
+      "title": "UserID"
+    },
+    "Percentage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "percentage": {
+          "type": "number"
+        }
+      },
+      "required": ["percentage"],
+      "title": "Percentage"
+    },
+    "LabeledFlag": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "flag": {
+          "$ref": "#/definitions/Flag"
+        }
+      },
+      "required": ["flag", "label"],
+      "title": "LabeledFlag"
+    },
+    "Flag": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "properties": {
+        "BooleanFlag": {
+          "type": "boolean"
+        },
+        "JsonFlag": {
+          "$ref": "#/definitions/JSONFlag"
+        }
+      },
+      "required": [],
+      "title": "Flag"
+    },
+    "JSONFlag": {
+      "type": "object",
+      "required": [],
+      "title": "JSONFlag"
+    }
+  }
+}
