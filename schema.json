@@ -3,6 +3,9 @@
   "$id": "https://firstkindsoftware.com/declarative.schema.json",
   "type": "object",
   "properties": {
+    "$schema": {
+      "type": "string"
+    },
     "version": {
       "type": "number",
       "enum": [1]
