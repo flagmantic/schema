@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://firstkindsoftware.com/FeatureFlag.schema.json",
+  "$id": "https://firstkindsoftware.com/declarative.schema.json",
   "type": "object",
   "properties": {
     "version": {
@@ -35,7 +35,7 @@
           "type": ["array", "null"],
           "items": { "type": "string" }
         },
-        "featureFlags": {
+        "feature_flags": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/FeatureFlag"
@@ -153,19 +153,19 @@
         },
         "And": {
           "type": "array",
-          "items": {
-            "$ref": "#/$defs/Formula"
-          },
-          "minItems": 2,
-          "maxItems": 2
+          "prefixItems": [
+            { "$ref": "#/$defs/Formula" },
+            { "$ref": "#/$defs/Formula" }
+          ],
+          "items": false
         },
         "Or": {
           "type": "array",
-          "items": {
-            "$ref": "#/$defs/Formula"
-          },
-          "minItems": 2,
-          "maxItems": 2
+          "prefixItems": [
+            { "$ref": "#/$defs/Formula" },
+            { "$ref": "#/$defs/Formula" }
+          ],
+          "items": false
         },
         "Negate": {
           "$ref": "#/$defs/Formula"
