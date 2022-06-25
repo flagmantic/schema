@@ -69,7 +69,8 @@
             "^[0-9]+$": {
               "$ref": "#/$defs/LabeledFlag"
             }
-          }
+          },
+          "additionalProperties": false
         },
         "is_frontend": {
           "type": "boolean"
