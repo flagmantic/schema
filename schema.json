@@ -32,6 +32,7 @@
         },
         "key": {
           "type": "string",
+          "pattern": "^[^\\s]+$",
           "minLength": 1,
           "maxLength": 50
         },
@@ -60,6 +61,7 @@
       "properties": {
         "key": {
           "type": "string",
+          "pattern": "^[^\\s]+$",
           "minLength": 1,
           "maxLength": 50
         },
