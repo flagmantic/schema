@@ -1,0 +1,363 @@
+openapi: 3.0.0
+info:
+  title: First Kind APIs
+  version: "1.0"
+  description: Our SDKs wrap these APIs to provide typed experiences,
+    but the REST APIs are available for you to use.
+  contact:
+    name: First Kind Software
+    url: firstkindsoftware.com/contact
+    email: helpme@firstkindsoftware.com
+servers:
+  - url: https://api.firstkindsoftware.com
+    description: Production API endpoint
+paths:
+  /v1/declarative:
+    post:
+      summary: Declare state
+      security:
+        - ApiKeyAuth: []
+      tags: []
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeclarativeResponse"
+      operationId: v1-post-declarative
+      requestBody:
+        description: A declarative description of your projects, environments, and flags
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeclarativeState"
+  /v1/projects/{projectKey}/environments/{environmentKey}/flags/{flagKey}:
+    parameters:
+      - schema:
+          type: string
+        name: projectKey
+        in: path
+        required: true
+        description: The project you're querying
+      - schema:
+          type: string
+        name: environmentKey
+        in: path
+        required: true
+        description: The environment you're querying
+      - schema:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        style: simple
+        name: flagKey
+        in: path
+        required: true
+        description: The flag you're querying
+    get:
+      summary: Evaluate feature flag
+      security:
+        - ApiKeyAuth: []
+      tags: []
+      responses:
+        "200":
+          description: The flag value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FlagResponse"
+      operationId: get-v1-evaluate-flag
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: USER-ID
+          description: Optional header to identify the user for targeting purposes
+components:
+  schemas:
+    DeclarativeResponse:
+      title: DeclarativeResponse
+      examples:
+        - success: true
+      type: object
+      description: Either validation errors, or a success result
+    FlagResponse:
+      title: FlagResponse
+      examples:
+        - example-flag1:
+            BooleanFlag: false
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/Flag"
+      description: A flag value
+    DeclarativeState:
+      title: DeclarativeState
+      type: object
+      required:
+        - version
+        - projects
+      additionalProperties: false
+      properties:
+        $schema:
+          type: string
+        version:
+          type: number
+          enum: [1]
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/Project"
+    Project:
+      title: Project
+      type: object
+      required:
+        - name
+        - key
+        - feature_flags
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        key:
+          type: string
+          pattern: "^[^\\s]+$"
+          minLength: 1
+          maxLength: 50
+        description:
+          type:
+            - string
+            - "null"
+        tags:
+          type:
+            - array
+            - "null"
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+        feature_flags:
+          type: array
+          items:
+            "$ref": "#/components/schemas/FeatureFlag"
+    Environments:
+      type: object
+      minProperties: 1
+      additionalProperties:
+        "$ref": "#/components/schemas/Environment"
+      required:
+        - development
+        - production
+        - staging
+      title: Environments
+    Environment:
+      type: object
+      additionalProperties: false
+      properties:
+        enabled:
+          type: boolean
+        targeting:
+          type:
+            - array
+            - "null"
+          items:
+            "$ref": "#/components/schemas/Targeting"
+        enabled_default_variation:
+          type: integer
+        disabled_variation:
+          type: integer
+      required:
+        - disabled_variation
+        - enabled
+        - enabled_default_variation
+      title: Environment
+    Targeting:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        formula:
+          "$ref": "#/components/schemas/Formula"
+        variation:
+          type: integer
+        starts_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+      required:
+        - expires_at
+        - formula
+        - name
+        - starts_at
+        - variation
+      title: Targeting
+    Formula:
+      type: object
+      minProperties: 1
+      maxProperties: 1
+      additionalProperties: false
+      properties:
+        Pure:
+          "$ref": "#/components/schemas/TargetingStrategy"
+        And:
+          type: array
+          prefixItems:
+            - "$ref": "#/components/schemas/Formula"
+            - "$ref": "#/components/schemas/Formula"
+          items: false
+        Or:
+          type: array
+          prefixItems:
+            - "$ref": "#/components/schemas/Formula"
+            - "$ref": "#/components/schemas/Formula"
+          items: false
+        Negate:
+          "$ref": "#/components/schemas/Formula"
+      required: []
+      title: Formula
+    TargetingStrategy:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      maxProperties: 1
+      properties:
+        MetadataPredicate:
+          "$ref": "#/components/schemas/MetadataPredicate"
+        UserId:
+          "$ref": "#/components/schemas/UserID"
+        Percentage:
+          "$ref": "#/components/schemas/Percentage"
+      required: []
+      title: TargetingStrategy
+    MetadataPredicate:
+      type: object
+      additionalProperties: false
+      properties:
+        attribute:
+          type: string
+          minLength: 1
+          maxLength: 100
+        operator:
+          type: string
+          enum:
+            - StartsWith
+            - EndsWith
+            - Equals
+            - Contains
+            - Matches
+        value:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required:
+        - attribute
+        - operator
+        - value
+      title: MetadataPredicate
+    UserID:
+      type: object
+      additionalProperties: false
+      properties:
+        user_ids:
+          type: array
+          items:
+            type: string
+            format: integer
+      required:
+        - user_ids
+      title: UserID
+    Percentage:
+      type: object
+      additionalProperties: false
+      properties:
+        percentage:
+          type: number
+      required:
+        - percentage
+      title: Percentage
+    LabeledFlag:
+      type: object
+      additionalProperties: false
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 100
+        flag:
+          "$ref": "#/components/schemas/Flag"
+      required:
+        - flag
+        - label
+      title: LabeledFlag
+    Flag:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      maxProperties: 1
+      properties:
+        BooleanFlag:
+          type: boolean
+        JsonFlag:
+          "$ref": "#/components/schemas/JSONFlag"
+      required: []
+      title: Flag
+    JSONFlag:
+      type: object
+      required: []
+      title: JSONFlag
+    FeatureFlag:
+      type: object
+      additionalProperties: false
+      properties:
+        key:
+          type: string
+          pattern: "^[^\\s]+$"
+          minLength: 1
+          maxLength: 50
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type:
+            - string
+            - "null"
+        tags:
+          type:
+            - array
+            - "null"
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+        variations:
+          type: object
+          minProperties: 1
+          patternProperties:
+            "^[0-9]+$":
+              "$ref": "#/components/schemas/LabeledFlag"
+          additionalProperties: false
+        is_frontend:
+          type: boolean
+        environments:
+          "$ref": "#/components/schemas/Environments"
+      required:
+        - environments
+        - is_frontend
+        - key
+        - name
+        - variations
+      title: FeatureFlag
+  securitySchemes:
+    ApiKeyAuth:
+      name: API-Key
+      type: apiKey
+      in: header
